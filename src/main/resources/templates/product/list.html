@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <style>
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 0;
+        }
+        .search-box {
+            margin-top: 15px;
+        }
+        .search-box input {
+            border-radius: 25px;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+        }
+        .table-custom {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .table-custom thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .table-custom thead th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+        }
+        .table-custom tbody tr {
+            transition: all 0.3s ease;
+        }
+        .table-custom tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .product-image:hover {
+            transform: scale(1.5);
+            z-index: 1000;
+        }
+        .badge-category {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .price-tag {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn-action {
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="header-section">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="header-title">
+                <i class="bi bi-box-seam-fill"></i>
+                Danh sách sản phẩm
+            </h2>
+            <a th:href="@{/products/add}" class="btn btn-light btn-lg">
+                <i class="bi bi-plus-circle-fill"></i> Thêm sản phẩm mới
+            </a>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="form-control"
+                   placeholder="🔍 Tìm kiếm sản phẩm..." onkeyup="searchProducts()">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-custom" id="productsTable">
+            <thead>
+            <tr>
+                <th width="5%"><i class="bi bi-hash"></i> ID</th>
+                <th width="25%"><i class="bi bi-tag"></i> Tên sản phẩm</th>
+                <th width="15%" class="text-center"><i class="bi bi-image"></i> Hình ảnh</th>
+                <th width="15%"><i class="bi bi-currency-dollar"></i> Giá</th>
+                <th width="15%"><i class="bi bi-folder"></i> Danh mục</th>
+                <th width="25%" class="text-center"><i class="bi bi-gear"></i> Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(products)}">
+                <td colspan="6">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>Chưa có sản phẩm nào. Hãy thêm sản phẩm đầu tiên!</p>
+                        <a th:href="@{/products/add}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Thêm sản phẩm ngay
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr th:each="product : ${products}">
+                <td th:text="${product.id}" style="font-weight: bold; color: #667eea;"></td>
+                <td>
+                    <strong th:text="${product.name}"></strong>
+                </td>
+                <td class="text-center">
+                    <img th:src="${product.image}" alt="Ảnh SP" class="product-image">
+                </td>
+                <td class="price-tag">
+                    <i class="bi bi-cash-coin"></i>
+                    <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                </td>
+                <td>
+            <span class="badge badge-category bg-info"
+                  th:text="${product.category != null ? product.category.name : 'Chưa phân loại'}"></span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a th:href="@{/products/edit/{id}(id=${product.id})}"
+                           class="btn btn-warning btn-action">
+                            <i class="bi bi-pencil-square"></i> Sửa
+                        </a>
+                        <a th:href="@{/products/delete/{id}(id=${product.id})}"
+                           class="btn btn-danger btn-action"
+                           onclick="return confirm('⚠️ Bạn có chắc muốn xóa sản phẩm này không?')">
+                            <i class="bi bi-trash"></i> Xóa
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function searchProducts() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('productsTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const textValue = cell.textContent || cell.innerText;
+                        if (textValue.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                row.style.display = found ? '' : 'none';
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
