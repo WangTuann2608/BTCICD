@@ -40,4 +40,4 @@ jobs:
           context: .
           push: true
           # Lưu ý: Thay 'user_docker' bằng tên thật hoặc dùng biến secret
-          tags: ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+          tags: ${{ secrets.wangtuan }}/springboot-app:latest
