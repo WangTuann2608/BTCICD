@@ -17,7 +17,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v4.0.0
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
+          username: ${{ secrets.DOCKER_WANGTUAN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Bước 5: Build Docker Image và Push lên Docker Hub
@@ -27,4 +27,4 @@ jobs:
           context: .
           push: true
           # Lưu ý: Thay 'user_docker' bằng tên thật hoặc dùng biến secret
-          tags: ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+          tags: ${{ secrets.DOCKER_WANGTUAN }}/springboot-app:latest
