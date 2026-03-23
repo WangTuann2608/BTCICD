@@ -11,18 +11,18 @@ jobs:
     steps:
       # 1. Lấy code từ GitHub
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       # 2. Đăng nhập vào Docker Hub
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_WANGTUAN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 3. Build và Push Image
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7.0.0
         with:
           context: .
           push: true
@@ -30,22 +30,21 @@ jobs:
           tags: ${{ secrets.DOCKER_WANGTUAN }}/springboot-app:latest
 
       # 4. Gọi Webhook để Deploy
-      - name: Deploy via Webhook
+      - name: Triển khai lên DevOps Classroom
         run: |
-          REPO="${{ secrets.DOCKER_WANGTUAN }}/springboot-app"
+          REPO="repository/docker"
           RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest")
-          
-          # Tách Body và HTTP Code
-          BODY=$(echo "$RESPONSE" | sed '$d')
+          BODY=$(echo "$RESPONSE" | sed "$d")
           CODE=$(echo "$RESPONSE" | tail -n1)
-          
-          echo "Webhook HTTP Status: $CODE"
-          
+          echo "Webhook HTTP: $CODE"
           if [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
-            echo "--- DEPLOY THẤT BẠI ---"
+            echo "Deploy thất bại. Xem chi tiết trong nhóm log bên dưới."
+            echo "::group::Chi tiết webhook JSON"
             echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+            echo "::endgroup::"
             exit 1
-          else
-            echo "--- DEPLOY THÀNH CÔNG ---"
-            echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
           fi
+          echo "Deploy thành công."
+          echo "::group::Chi tiết webhook JSON"
+          echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+          echo "::endgroup::"
