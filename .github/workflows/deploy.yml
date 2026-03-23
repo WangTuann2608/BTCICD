@@ -20,19 +20,9 @@ jobs:
           username: ${{ secrets.DOCKER_WANGTUAN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3. Build và Push Image
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v7.0.0
-        with:
-          context: .
-          push: true
-          # Tags sử dụng Username từ Secret
-          tags: ${{ secrets.DOCKER_WANGTUAN }}/springboot-app:latest
-
-      # 4. Gọi Webhook để Deploy
       - name: Triển khai lên DevOps Classroom
         run: |
-          REPO="repository/docker"
+          REPO="wangtuan/springboot-app"
           RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest")
           BODY=$(echo "$RESPONSE" | sed "$d")
           CODE=$(echo "$RESPONSE" | tail -n1)
