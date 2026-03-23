@@ -20,6 +20,9 @@ jobs:
           username: ${{ secrets.DOCKER_WANGTUAN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: setup build
+        uses: docker/setup-buildx-action@v4.0.0
+
       - name: Triển khai lên DevOps Classroom
         run: |
           REPO="wangtuan/springboot-app"
