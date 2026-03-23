@@ -2,29 +2,50 @@ name: CI/CD Push to Docker Hub
 
 on:
   push:
-    branches: [ "main" ] # Chạy khi bạn push code lên nhánh main
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # Bước 1: Lấy code từ GitHub về máy ảo
+      # 1. Lấy code từ GitHub
       - name: Checkout code
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v4
 
-      # Bước 4: Đăng nhập vào Docker Hub
+      # 2. Đăng nhập vào Docker Hub
       - name: Login to Docker Hub
-        uses: docker/login-action@v4.0.0
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_WANGTUAN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Bước 5: Build Docker Image và Push lên Docker Hub
+      # 3. Build và Push Image
       - name: Build and push Docker image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # Lưu ý: Thay 'user_docker' bằng tên thật hoặc dùng biến secret
+          # Tags sử dụng Username từ Secret
           tags: ${{ secrets.DOCKER_WANGTUAN }}/springboot-app:latest
+
+      # 4. Gọi Webhook để Deploy
+      - name: Deploy via Webhook
+        run: |
+          REPO="${{ secrets.DOCKER_WANGTUAN }}/springboot-app"
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest")
+          
+          # Tách Body và HTTP Code
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          CODE=$(echo "$RESPONSE" | tail -n1)
+          
+          echo "Webhook HTTP Status: $CODE"
+          
+          if [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
+            echo "--- DEPLOY THẤT BẠI ---"
+            echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+            exit 1
+          else
+            echo "--- DEPLOY THÀNH CÔNG ---"
+            echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
+          fi
