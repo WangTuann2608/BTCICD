@@ -25,8 +25,8 @@ jobs:
 
       - name: Triển khai lên DevOps Classroom
         run: |
-          REPO="wangtuan/springboot-app"
-          RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest")
+          REPO="${{ secrets.DOCKER_WANGTUAN }}/springboot-app"
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -X GET "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=latest")
           BODY=$(echo "$RESPONSE" | sed "$d")
           CODE=$(echo "$RESPONSE" | tail -n1)
           echo "Webhook HTTP: $CODE"
